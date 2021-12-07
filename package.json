@@ -1,0 +1,21 @@
+{
+  "name": "test",
+  "version": "1.0.0",
+  "description": "문자열을 줄바꿈을 기준으로 나누어 2차원 배열로 만들고, 스테이지 구분선을 기준으로 스테이지를 나누어 배열에 저장하였습니다. 그 후, 문제에 주어진 조건에 따라 각 문자열을 파싱하는 parser함수와, 파싱된 숫자 정보를 읽어 props객체를 생성하는 props함수를 만들어 스테이지 정보 뒤에 붙여넣고 스테이지 구분선을 제외한 나머지가 출력되게 하였습니다.",
+  "main": "Level2.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@gist.github.com/bf972df8d76aba00e443cfa3124a36db.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://gist.github.com/bf972df8d76aba00e443cfa3124a36db"
+  },
+  "homepage": "https://gist.github.com/bf972df8d76aba00e443cfa3124a36db",
+  "type": "module"
+}
