@@ -9,15 +9,13 @@ const rl = readline.createInterface({
 });
 const stage2=
     'Stage 2\n  #######\n###  O  ###\n#    o    #\n# Oo P oO #\n###  o  ###\n #   O  # \n ########\n'
-function SetPropmt(stage,flag){
+function SetPropmt(stage){
     rl.setPrompt(stage+"SOKOVAN>");
     rl.prompt();
     rl.on("line", function(line){
         const parsed = parser(stage.split('\n'));
-        parseString(parsed, line, flag);
-        if(flag){
-            rl.close();
-        }
+        parseString(parsed, line);
+        rl.close();
     })
     rl.on("close", function(){
         process.exit();
@@ -25,12 +23,13 @@ function SetPropmt(stage,flag){
 }
 
 
-SetPropmt(stage2, false);
+SetPropmt(stage2);
 
 
-function parseString(parsed,str, end){
+function parseString(parsed,str){
     const original = parserReverse(parsed);
     const sequence = str.trim().split('');
+    let refresh = false, end=false;
     sequence.forEach(char => {
         const row = parsed.find(row => row.includes(3));
         const rowIdx = parsed.findIndex(line => line.includes(3));
@@ -57,22 +56,24 @@ function parseString(parsed,str, end){
                 end = true;
                 break;
             case 'r':
-                SetPropmt(original, false);
+                refresh = true;
                 break;
             default:
                 break;
         }
-        if ([0, 1, 2, 3].includes(parsed[rowIdx +dx][idx+dy])) { //장애물 여부
+        if (dir!==""||[0, 1, 2].includes(parsed[rowIdx -dy][idx+dx])) { //장애물 여부
             console.log(parserReverse(parsed)) //그대로 문자열로 출력;
-            console.log(" (경고!): 해당 명령을 수행할 수 없습니다!");
+            console.log(`${char.toUpperCase()} (경고!): 해당 명령을 수행할 수 없습니다!"`);
         } else {
-            parsed[rowIdx +dx][idx+dy] = 3;     //위치변경 후 문자열로 출력
+            parsed[rowIdx -dy][idx+dx] = 3;     //위치변경 후 문자열로 출력
             parsed[rowIdx][idx] = undefined;
             console.log(parserReverse(parsed));
             console.log(`${dir}으로 이동합니다.`);
         }
     });
-    SetPropmt(parserReverse(parsed), false);
+    if(refresh) {
+        SetPropmt(original, false);
+    }
 }
 
 
