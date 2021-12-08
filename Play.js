@@ -7,12 +7,12 @@ fs.readFile('map.txt', 'utf8', (err,data)=>{
     const arr = data.toString();
     const matrix = SplitStage(arr);
     const gen = generateMatrix(matrix);
-    ReadLine(gen.next());
+    ReadLine(gen);
 })
 
 function* generateMatrix(matrix){
-   for(let i=0; i<matrix.length; i++){
-       yield matrix[i]
+   for(const stage of matrix){
+       yield parser(stage)
    }
 }
 
@@ -23,7 +23,6 @@ const rl = readline.createInterface({
     terminal:false,
 });
 
-
 function ReadLine(gen){
     const next = gen.next();
     if(next.done){
@@ -31,12 +30,13 @@ function ReadLine(gen){
         return;
     }
     const parsed = next.value;
-    const goals = GoalCount(parsed);  //처음 목표개수와 좌표정보를 저장한다.
-    const holes = HoleCors(parsed);
+    let goals = GoalCount(parsed);  //처음 목표개수와 좌표정보를 저장한다.
+    let holes = HoleCors(parsed);
     let turnCount = 0;
     rl.setPrompt(parserReverse(parsed)+"SOKOVAN>");
     rl.prompt();
     rl.on('line', (line)=> {
+
         if (['q', 'r'].some(el => line.includes(el))) {
             line.split('').forEach(char => {
                 if (char === 'q') {
@@ -50,7 +50,7 @@ function ReadLine(gen){
         } else {
           Sokovan(parsed, line, turnCount, holes);
           const curr = currCount(parsed);
-            if(curr===goals){
+            if(curr===goals){ //목표개수에 도달하면 작동해야하는데, 이상하게
                 console.log("Cleared!");
                 console.log("축하합니다!\n 턴수:", turnCount);
                 ReadLine(gen);
