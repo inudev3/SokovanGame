@@ -9,58 +9,36 @@ const rl = readline.createInterface({
 });
 const stage2=
     'Stage 2\n  #######\n###  O  ###\n#    o    #\n# Oo P oO #\n###  o  ###\n #   O  # \n ########\n'
-function SetPropmt(stage){
+export function SetPrompt(stage, func){
     rl.setPrompt(stage+"SOKOVAN>");
-    rl.prompt();
+    rl.getPrompt();
     rl.on("line", function(line){
+        let end=false, refresh=false, cleared=false;
         const parsed = parser(stage.split('\n'));
-        parseString(parsed, line);
-        rl.close();
+
+        func(parsed, line, refresh, cleared)
+        if(end){
+            rl.close()
+        }
     })
     rl.on("close", function(){
         process.exit();
     });
 }
+//
+//
+// SetPrompt(stage2, parseString);
 
 
-SetPropmt(stage2);
-
-
-function parseString(parsed,str){
-    const original = parserReverse(parsed);
+function parseString(parsed,str, end, refresh, cleared){
+    const original = parserReverse(parsed, end, refresh);
     const sequence = str.trim().split('');
-    let refresh = false, end=false;
+
     sequence.forEach(char => {
         const row = parsed.find(row => row.includes(3));
         const rowIdx = parsed.findIndex(line => line.includes(3));
         const idx = row.indexOf(3);
-        let dx=0, dy=0, dir="";
-        switch (char) {
-            case 'w':
-                dy+=1;
-                dir="위쪽"
-                break;
-            case 'a':
-                dx-=1;
-                dir="왼쪽"
-                break;
-            case 's':
-                dy-=1;
-                dir="아래쪽"
-                break;
-            case 'd':
-                dx+=1;
-                dir="오른쪽"
-                break;
-            case 'q':
-                end = true;
-                break;
-            case 'r':
-                refresh = true;
-                break;
-            default:
-                break;
-        }
+        const {dx,dy,dir} = switchChar(char);
         if (dir!==""||[0, 1, 2].includes(parsed[rowIdx -dy][idx+dx])) { //장애물 여부
             console.log(parserReverse(parsed)) //그대로 문자열로 출력;
             console.log(`${char.toUpperCase()} (경고!): 해당 명령을 수행할 수 없습니다!"`);
@@ -71,9 +49,29 @@ function parseString(parsed,str){
             console.log(`${dir}으로 이동합니다.`);
         }
     });
-    if(refresh) {
-        SetPropmt(original, false);
-    }
 }
 
-
+export function switchChar(char){
+    let dx=0, dy=0, dir="";
+    switch (char) {
+        case 'w':
+            dy+=1;
+            dir="위쪽"
+            break;
+        case 'a':
+            dx-=1;
+            dir="왼쪽"
+            break;
+        case 's':
+            dy-=1;
+            dir="아래쪽"
+            break;
+        case 'd':
+            dx+=1;
+            dir="오른쪽"
+            break;
+        default:
+            break;
+    }
+    return {dx,dy,dir}
+}

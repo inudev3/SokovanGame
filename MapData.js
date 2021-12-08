@@ -44,6 +44,8 @@ export function parserReverse(arr){ //숫자에서 문자열로 파싱
                     return 'P';
                 case 4:
                     return '='
+                case '0':
+                    return '0'
                 default:
                     return;
             }
@@ -68,6 +70,8 @@ export function parser(arr) { //문자열에서 숫자로 파싱
                     return 3;
                 case '=':
                     return 4;
+                case '0':
+                    return '0';
                 default:
                     return;
             }
@@ -93,20 +97,20 @@ export function props(arr) { //속성 추출
         return result;
     }, {"구멍의 수": 0, "공의 수": 0, "가로크기": 0, "플레이어 위치": [0, 0], "세로크기": 0});
 };
-
-const str =
-    `Stage 1
-#####
-#OoP#
-#####
-=====
-Stage 2
-  #######
-###  O  ###
-#    o    #
-# Oo P oO #
-###  o  ###
- #   O  #
- ########
-`
-MapReader(str);
+//
+// const str =
+//     `Stage 1
+// #####
+// #OoP#
+// #####
+// =====
+// Stage 2
+//   #######
+// ###  O  ###
+// #    o    #
+// # Oo P oO #
+// ###  o  ###
+//  #   O  #
+//  ########
+// `
+// MapReader(str);
