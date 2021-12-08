@@ -3,14 +3,22 @@ import {parser, parserReverse, SplitStage} from "./MapData.js";
 import {switchChar} from "./Level2.js";
 import * as readline from "readline";
 
-fs.readFile('map.txt', 'utf8', (err,data)=>{
+fs.readFile('map.txt', 'utf8', async (err,data)=>{
     const arr = data.toString();
     const matrix = SplitStage(arr);
     const gen = generateMatrix(matrix);
-    ReadLine(gen);
+    let cleared=false;
+    ReadLine((await gen.next()).value, cleared);
+    for await(const stage of gen){
+        if(cleared){
+            ReadLine(stage, false);
+        }
+    }
+    console.log('전체 게임을 클리어하셨습니다!\n 축하드립니다!');
+
 })
 
-function* generateMatrix(matrix){
+async function* generateMatrix(matrix){
    for(const stage of matrix){
        yield parser(stage)
    }
@@ -23,15 +31,13 @@ const rl = readline.createInterface({
     terminal:false,
 });
 
-function ReadLine(gen){
-    const next = gen.next();
-    if(next.done){
-        console.log('전체 게임을 클리어하셨습니다!\n 축하드립니다!');
-        return;
-    }
-    const parsed = next.value;
-    let goals = GoalCount(parsed);  //처음 목표개수와 좌표정보를 저장한다.
-    let holes = HoleCors(parsed);
+function ReadLine(parsed, cleared){
+
+
+
+    const goals = GoalCount(parsed);  //처음 목표개수와 좌표정보를 저장한다.
+    const holes = HoleCors(parsed);
+
     let turnCount = 0;
     rl.setPrompt(parserReverse(parsed)+"SOKOVAN>");
     rl.prompt();
@@ -48,12 +54,10 @@ function ReadLine(gen){
                 }
             })
         } else {
-          Sokovan(parsed, line, turnCount, holes);
-          const curr = currCount(parsed);
-            if(curr===goals){ //목표개수에 도달하면 작동해야하는데, 이상하게
+           Sokovan(parsed, line, turnCount,goals, holes, cleared);
+            if(cleared){ //목표개수에 도달하면 작동해야하는데, 이상하게
                 console.log("Cleared!");
                 console.log("축하합니다!\n 턴수:", turnCount);
-                ReadLine(gen);
             }
             else{
                 rl.prompt();
@@ -84,8 +88,7 @@ function currCount(parsed){
 }
 
 
-function Sokovan(parsed, str, turnCount,  holes) {
-
+function Sokovan(parsed, str, turnCount, goals, holes, cleared) {
     const sequence = str.trim().split(''); //입력을 받고
     for(const char of sequence){ // 매 입력마다
         const {dx, dy, dir} = switchChar(char); //입력에 따른 위치변환정보를 받아와서
@@ -101,6 +104,7 @@ function Sokovan(parsed, str, turnCount,  holes) {
             if(holes.some(([ycors,xcors])=>x===xcors && y===ycors)){parsed[y][x] ='0';}
         })
         console.log(parserReverse(parsed)) //그대로 문자열로 출력한다.
+        if(currCount(parsed)===goals){cleared = true;}
         if (stop) { //stop 플래그가 true면 경고를 출력한다.
             console.log(`${char.toUpperCase()} (경고!): 해당 명령을 수행할 수 없습니다!"`);
         } else { // 아니면 턴수에 1추가하고 정상 출력한다.
