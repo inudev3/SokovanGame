@@ -22,7 +22,7 @@
 Sokovan(parsed, line, turnCount, holes);
       const curr = currCount(parsed);
       console.log(curr,goals) 
-        if(curr===goals){  
+        if(curr===goals){  <--- 분기문이 실행되지 않고 스테이지 정보가 변경됨
             console.log("Cleared!");
             console.log("축하합니다!\n 턴수:", turnCount);
             ReadLine(gen);
