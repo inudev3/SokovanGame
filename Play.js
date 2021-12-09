@@ -31,9 +31,13 @@ const rl = readline.createInterface({
     terminal:false,
 });
 
-function ReadLine(parsed, cleared){
-
-
+function ReadLine(gen){
+    const next = gen.next();
+    if(next.done){
+        console.log("모든 스테이지를 클리어하셨습니다.");
+        rl.close();
+    }
+    const parsed = next.value;
 
     const goals = GoalCount(parsed);  //처음 목표개수와 좌표정보를 저장한다.
     const holes = HoleCors(parsed);
@@ -54,11 +58,12 @@ function ReadLine(parsed, cleared){
                 }
             })
         } else {
-           Sokovan(parsed, line, turnCount,goals, holes, cleared);
-            if(cleared){ //목표개수에 도달하면 작동해야하는데, 이상하게
+           Sokovan(parsed, line, turnCount,goals, holes);
+           const curr= currCount(parsed);
+            if(curr===goals){ //목표개수에 도달하면 작동해야하는데, 이상하게
                 console.log("Cleared!");
                 console.log("축하합니다!\n 턴수:", turnCount);
-            }
+                ReadLine(gen);            }
             else{
                 rl.prompt();
             }
@@ -88,7 +93,7 @@ function currCount(parsed){
 }
 
 
-function Sokovan(parsed, str, turnCount, goals, holes, cleared) {
+function Sokovan(parsed, str, turnCount, goals, holes) {
     const sequence = str.trim().split(''); //입력을 받고
     for(const char of sequence){ // 매 입력마다
         const {dx, dy, dir} = switchChar(char); //입력에 따른 위치변환정보를 받아와서
@@ -104,7 +109,6 @@ function Sokovan(parsed, str, turnCount, goals, holes, cleared) {
             if(holes.some(([ycors,xcors])=>x===xcors && y===ycors)){parsed[y][x] ='0';}
         })
         console.log(parserReverse(parsed)) //그대로 문자열로 출력한다.
-        if(currCount(parsed)===goals){cleared = true;}
         if (stop) { //stop 플래그가 true면 경고를 출력한다.
             console.log(`${char.toUpperCase()} (경고!): 해당 명령을 수행할 수 없습니다!"`);
         } else { // 아니면 턴수에 1추가하고 정상 출력한다.
