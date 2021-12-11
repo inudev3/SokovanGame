@@ -1,24 +1,16 @@
 import * as fs from "fs";
 import {parser, parserReverse, SplitStage} from "./MapData.js";
 import {switchChar} from "./Level2.js";
-import * as readline from "readline";
+import * as readline from 'readline';
 
-fs.readFile('map.txt', 'utf8', async (err,data)=>{
+fs.readFile('map.txt', 'utf8',  (err,data)=>{
     const arr = data.toString();
     const matrix = SplitStage(arr);
     const gen = generateMatrix(matrix);
-    let cleared=false;
-    ReadLine((await gen.next()).value, cleared);
-    for await(const stage of gen){
-        if(cleared){
-            ReadLine(stage, false);
-        }
-    }
-    console.log('전체 게임을 클리어하셨습니다!\n 축하드립니다!');
-
+    ReadLine(gen);
 })
 
-async function* generateMatrix(matrix){
+function* generateMatrix(matrix){
    for(const stage of matrix){
        yield parser(stage)
    }
@@ -30,7 +22,6 @@ const rl = readline.createInterface({
     output:process.stdout,
     terminal:false,
 });
-
 function ReadLine(gen){
     const next = gen.next();
     if(next.done){
@@ -38,10 +29,7 @@ function ReadLine(gen){
         rl.close();
     }
     const parsed = next.value;
-
-    const goals = GoalCount(parsed);  //처음 목표개수와 좌표정보를 저장한다.
-    const holes = HoleCors(parsed);
-
+    const{GoalCount, HoleCors} = process(parsed);
     let turnCount = 0;
     rl.setPrompt(parserReverse(parsed)+"SOKOVAN>");
     rl.prompt();
@@ -58,9 +46,9 @@ function ReadLine(gen){
                 }
             })
         } else {
-           Sokovan(parsed, line, turnCount,goals, holes);
-           const curr= currCount(parsed);
-            if(curr===goals){ //목표개수에 도달하면 작동해야하는데, 이상하게
+           const after = Sokovan(parsed, line, turnCount, HoleCors);
+           const {currCount:curr} = process(after);
+            if(curr===GoalCount){ //목표개수에 도달하면 작동해야하는데, 이상하게
                 console.log("Cleared!");
                 console.log("축하합니다!\n 턴수:", turnCount);
                 ReadLine(gen);            }
@@ -68,28 +56,27 @@ function ReadLine(gen){
                 rl.prompt();
             }
         }
-    }).on('close', ()=>{console.log('Bye!'); process.exit(0)})
+    });
+    rl.on('close', ()=>{console.log('Bye!'); process.exit(0)});
 
 }
 
 
-function GoalCount(parsed){
-    return parsed.reduce((result, row) => { // 목표 갯수를 센다
-        result += row.reduce((cnt, num) => cnt + (num === 1), 0)
+
+function process(parsed){
+    const currCount= parsed.reduce((result, row) => {
+        result += row.reduce((cnt, num) => cnt + (num === '0'), 0);
         return result
     }, 0);
-}
-function HoleCors(parsed){
-    return parsed.reduce((result, row, index) => { // 원래 hole 좌정보를 저장한다.
+    const HoleCors = parsed.reduce((result, row, index) => { // 원래 hole 좌정보를 저장한다.
         if (row.includes(1)) {row.forEach((char, idx) => {if (char === 1) {result.push([index, idx])}})}
         return result;
     }, []);
-}
-function currCount(parsed){
-    return parsed.reduce((result, row) => {
-        result += row.reduce((cnt, num) => cnt + (num === '0'), 0);
+    const GoalCount = parsed.reduce((result, row) => { // 목표 갯수를 센다
+        result += row.reduce((cnt, num) => cnt + (num === 1), 0)
         return result
-    }, 0)
+    }, 0);
+    return {currCount, HoleCors, GoalCount}
 }
 
 
@@ -115,6 +102,7 @@ function Sokovan(parsed, str, turnCount, goals, holes) {
             turnCount+=1
             console.log(`${char.toUpperCase()}: ${dir}으로 이동합니다.`);
         }
+        return parsed;
     }
 
 
